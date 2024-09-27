@@ -1,0 +1,8 @@
+streamlit
+openai
+firebase-admin
+google-cloud-firestore
+google-cloud-secret-manager
+bcrypt
+streamlit-option-menu
+plotly
