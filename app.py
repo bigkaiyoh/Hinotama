@@ -5,7 +5,7 @@ from modules.modules import run_assistant, convert_image_to_text
 from modules.vocabvan import vocabvan_interface
 from firebase_setup import db
 from extra_pages.organization_dashboard import show_org_dashboard, full_org_dashboard
-from extra_pages.auth_page import show_user_auth, show_org_login  # Import auth functions
+from extra_pages.auth_page import show_auth_page  # Import auth functions
 from datetime import datetime
 import uuid 
 
@@ -28,8 +28,8 @@ if 'feedback' not in st.session_state:
 # Helper function to collect user input
 def get_input():
     st.subheader("作文（さくぶん）")
-    txt = st.text_area("こちらに文章を入力してください", height=220, value=st.session_state.txt)
-    st.info(f'現在の文字数: {len(txt.split())} 文字')
+    st.session_state.txt = st.text_area("こちらに文章を入力してください", height=220, value=st.session_state.txt)
+    st.info(f'現在の文字数: {len(st.session_state.txt)} 文字')
 
     uploaded_file = st.file_uploader(
         "ファイルをアップロードしてください",
@@ -49,8 +49,6 @@ def get_input():
             except Exception as e:
                 st.error(f"エラーが発生しました: {str(e)}")
 
-    return txt
-
 # Display AI feedback
 def display_feedback():
     if 'feedback' in st.session_state and st.session_state.feedback:
@@ -65,7 +63,7 @@ def display_feedback():
         """, unsafe_allow_html=True)
 
 # Save the submission to Firestore
-def save_submission(user_id, submission_text):
+def save_submission():
     try:
         # Reference to the submissions collection
         submissions_ref = db.collection('submissions')
@@ -76,8 +74,8 @@ def save_submission(user_id, submission_text):
         # Add a new submission to the collection (without feedback)
         submissions_ref.document(submission_id).set({
             'submission_id': submission_id,            # Unique ID for the submission
-            'user_id': user_id,                        # User ID of the person submitting
-            'submission_text': submission_text,        # Text of the submission
+            'user_id': st.session_state.user['id'],                        # User ID of the person submitting
+            'submission_text': st.session_state.txt,        # Text of the submission
             'submitAt': datetime.now(),                # Timestamp of submission
             'feedback_text': st.session_state.feedback                        # Empty feedback for now
         })
@@ -91,8 +89,7 @@ def save_submission(user_id, submission_text):
 def main():
     if st.session_state.user is None and st.session_state.organization is None:
         # Call the user and organization login functions from auth_page.py
-        show_user_auth()  # Show the login/registration form for users
-        show_org_login()  # Show the organization login form below
+        show_auth_page() 
     else:
         # Check if an organization is logged in
         if st.session_state.organization:
@@ -126,8 +123,8 @@ def main():
                 vocabvan_interface()
 
             # Get user input
-            txt = get_input()
-            information = f"Writing: {txt}"
+            get_input()
+            information = f"Writing: {st.session_state.txt}"
             
             # 提出ボタン
             submit_button = st.button("採点する🚀", type="primary")
@@ -143,14 +140,14 @@ def main():
                         st.write("**提出した作文**:")
                         
                         # Use markdown to display the text in a styled box
-                        box_content = txt.replace('\n', '<br>')
+                        box_content = st.session_state.txt.replace('\n', '<br>')
                         st.markdown(f"""
                             <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
                                 {box_content}
                             </div>
                         """, unsafe_allow_html=True)
                         
-                        st.write(f'文字数: {len(txt.split())} 文字')
+                        st.write(f'文字数: {len(st.session_state.txt)} 文字')
 
                     # Run the AI assistant and get feedback
                     st.session_state.feedback = run_assistant(
@@ -160,7 +157,7 @@ def main():
                         display_chat=False
                     )
                     # Save submission
-                    save_submission(st.session_state.user['id'], txt)
+                    save_submission()
 
                 else:
                     st.error("Your account is inactive. You cannot submit evaluations.")

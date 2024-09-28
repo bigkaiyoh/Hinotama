@@ -19,6 +19,7 @@ def authenticated_menu():
         
         if st.button("ログアウト"):
             logout_user()
+            st.page_link("app.py", label="ホーム", icon="🏠")
             st.rerun()
 
 def unauthenticated_menu():
@@ -26,7 +27,7 @@ def unauthenticated_menu():
     with st.sidebar:
         st.image("https://nuginy.com/wp-content/uploads/2024/08/Hinotama-favicon_HighRes.png", width=190)
         if st.button("ログイン"):
-            st.switch_page("auth_page.py")
+            st.switch_page("app.py")
 
 def menu():
     # Determine if a user is logged in or not, then show the appropriate navigation menu
