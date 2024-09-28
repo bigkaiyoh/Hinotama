@@ -7,6 +7,7 @@ from firebase_setup import db
 from extra_pages.organization_dashboard import show_org_dashboard, full_org_dashboard
 from extra_pages.auth_page import show_user_auth, show_org_login  # Import auth functions
 from datetime import datetime
+import uuid 
 
 
 # Define the assistant ID for the main part of the app
@@ -64,17 +65,27 @@ def display_feedback():
         """, unsafe_allow_html=True)
 
 # Save the submission to Firestore
-def save_submission(user_id, txt):
+def save_submission(user_id, submission_text):
     try:
-        user_ref = db.collection('users').document(user_id)
-        user_ref.collection('submissions').add({
-            'text': txt,
-            'submit_time': datetime.now(),
+        # Reference to the submissions collection
+        submissions_ref = db.collection('submissions')
+
+        # Generate a unique submission ID
+        submission_id = str(uuid.uuid4())
+
+        # Add a new submission to the collection (without feedback)
+        submissions_ref.document(submission_id).set({
+            'submission_id': submission_id,            # Unique ID for the submission
+            'user_id': user_id,                        # User ID of the person submitting
+            'submission_text': submission_text,        # Text of the submission
+            'submitAt': datetime.now(),                # Timestamp of submission
+            'feedback_text': st.session_state.feedback                        # Empty feedback for now
         })
-        return True
+
+        return True, submission_id  # Return the generated submission ID for later use
+
     except Exception as e:
-        print(f"Error saving submission: {e}")
-        return False
+        return False, f"Error saving submission: {e}"
 
 # Main app function to display content
 def main():
