@@ -5,12 +5,27 @@ from PIL import Image
 import base64
 import requests
 import json
+import re
 
 # Fetch OpenAI API key from Streamlit secrets
 api = st.secrets.api_key
 
 # Initialize OpenAI client only once
 client = OpenAI(api_key=api)
+
+def extract_score_from_feedback(feedback_text):
+    """
+    Extract the score from AI-generated feedback text.
+    The function uses regex to find the score after the keyword スコア (Score).
+    """
+    # Regular expression to find "スコア:" followed by a number (possibly ending with "点")
+    match = re.search(r"スコア:?\s*\*?\*?\s*(\d+(\.\d+)?)", feedback_text)
+    
+    if match:
+        return float(match.group(1))
+    
+    # If no match found, return None
+    return None
 
 def run_assistant(assistant_id, txt, return_content=False, display_chat=True):
     # Check if client is already in session state

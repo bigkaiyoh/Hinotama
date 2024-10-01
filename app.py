@@ -1,7 +1,7 @@
 import streamlit as st
 from PIL import Image
 from modules.menu import menu
-from modules.modules import run_assistant, convert_image_to_text
+from modules.modules import run_assistant, convert_image_to_text, extract_score_from_feedback
 from modules.vocabvan import vocabvan_interface
 from firebase_setup import db
 from extra_pages.organization_dashboard import show_org_dashboard, full_org_dashboard
@@ -71,13 +71,17 @@ def save_submission():
         # Generate a unique submission ID
         submission_id = str(uuid.uuid4())
 
-        # Add a new submission to the collection (without feedback)
+        # Extract score from feedback (placeholder for now)
+        score = extract_score_from_feedback(st.session_state.feedback)
+
+        # Add a new submission to the collection
         submissions_ref.document(submission_id).set({
             'submission_id': submission_id,            # Unique ID for the submission
-            'user_id': st.session_state.user['id'],                        # User ID of the person submitting
-            'submission_text': st.session_state.txt,        # Text of the submission
+            'user_id': st.session_state.user['id'],    # User ID of the person submitting
+            'submission_text': st.session_state.txt,   # Text of the submission
             'submitAt': datetime.now(),                # Timestamp of submission
-            'feedback_text': st.session_state.feedback                        # Empty feedback for now
+            'feedback_text': st.session_state.feedback,  # AI feedback text
+            'score': score                             # Extracted score (currently None)
         })
 
         return True, submission_id  # Return the generated submission ID for later use
