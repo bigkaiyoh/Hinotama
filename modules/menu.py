@@ -4,6 +4,8 @@ from auth import logout_user
 # Initialize session states if not set
 if 'user' not in st.session_state:
     st.session_state.user = None
+if 'organization' not in st.session_state:
+    st.session_state.organization = None
 
 def authenticated_menu():
     user = st.session_state.user

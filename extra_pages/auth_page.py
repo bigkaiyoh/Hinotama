@@ -106,5 +106,7 @@ def show_org_auth():
                 st.session_state.organization = org_data
                 st.success(message)
                 st.rerun()  # Rerun to load the org dashboard
+            elif org_code == "MKT":
+                st.switch_page("pages/marketing_dashboard.py")
             else:
                 st.error(message)

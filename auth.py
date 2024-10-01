@@ -144,8 +144,10 @@ def logout_org():
     return "Organization logout successful"
 
 
+
 # Function to detect browser and device type using JavaScript
 def get_device_and_browser():
+    # JavaScript to get browser and device type and send it back via Streamlit
     js_code = """
         <script>
             function sendBrowserInfo() {
@@ -175,37 +177,28 @@ def get_device_and_browser():
                     deviceType = "Desktop";
                 }
 
-                // Sending information to Streamlit via DOM manipulation
-                var browserField = document.getElementById("browser-info");
-                browserField.innerText = browserName + ";" + deviceType;
+                // Sending information to Streamlit using a hidden input field
+                const browserInfo = browserName + ";" + deviceType;
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.id = "browser-info";
+                input.value = browserInfo;
+                document.body.appendChild(input);
             }
             window.onload = sendBrowserInfo;
         </script>
         <div id="browser-info" style="display: none;"></div>
     """
+    
+    # Inject JavaScript into the app to run on page load
     components.html(js_code, height=0)
 
-    # Placeholder to receive the value from the JS code via Streamlit rerun
-    browser_info = st.empty()
-
-    if browser_info.text:
-        # Parsing the returned value from the JavaScript (format: "browserName;deviceType")
-        info = browser_info.text.split(";")
-        if len(info) == 2:
-            st.session_state['browser'] = info[0]
-            st.session_state['device_type'] = info[1]
-        else:
-            st.session_state['browser'] = "Unknown"
-            st.session_state['device_type'] = "Unknown"
-    else:
+    # Placeholder for hidden browser information
+    if 'browser' not in st.session_state or 'device_type' not in st.session_state:
         st.session_state['browser'] = "Unknown"
         st.session_state['device_type'] = "Unknown"
 
-# Adding the call to get the browser and device type early in the session
-if 'browser' not in st.session_state or 'device_type' not in st.session_state:
-    get_device_and_browser()
-    st.rerun()
-
+# Function to log login events
 def log_login_event(user_id):
     """Logs a login event in the Firestore login_events collection."""
     try:
@@ -222,7 +215,7 @@ def log_login_event(user_id):
     except Exception as e:
         st.error(f"Failed to log login event: {str(e)}")
 
-# Logging function to track issues with missing registration dates
+# Function to log issues with missing registration dates
 def log_missing_register_at(user_id):
     try:
         db.collection('user_issues').add({

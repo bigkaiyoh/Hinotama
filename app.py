@@ -171,10 +171,10 @@ def main():
 
 if __name__ == "__main__":
     # Page configuration for the main app
-    fc = Image.open("src/hinotama_fv.png")
-    st.set_page_config(
-        page_title="Hinotama",
-        page_icon=fc,
-        layout="wide"
-    )
+    # fc = Image.open("src/hinotama_fv.png")
+    # st.set_page_config(
+    #     page_title="Hinotama",
+    #     page_icon=fc,
+    #     layout="wide"
+    # )
     main()
